@@ -9,10 +9,13 @@ const getDirectories = source =>
 const getFiles = source =>
   fs.readdirSync(source).map(name => path.join(source, name)).filter(isNotDirectory);
 
+//<!-- Place this tag in your head or just before your close body tag. -->
+// <script async defer src=""></script>
+
 module.exports = {
   base: '/',
   head: [
-    ['link', { rel: "icon", href: "/favicon.png"}],
+    ['link', { rel: "icon", href: "/favicon.png"}]
   ],
   locales: {
     '/': {
@@ -41,30 +44,22 @@ module.exports = {
             text: 'Guide',
             link: '/guide/'
           },
+          /*
           {
             text: 'Components',
             link: '/components/'
           },
+          */
           {
             text: 'Changelog',
             link: 'https://github.com/slanatech/swagger-stats/blob/master/CHANGELOG.md'
           }
         ],
         sidebar: {
-          '/guide/': ['/guide/', 'api','quickstart','conf','prometheus','stats'],
+          '/guide/': ['/guide/', 'intro', 'conf', 'api', 'prometheus']
+          /*
           '/components/': getComponentsSidebar()
-            /*[
-            {
-              title: 'Components',
-              collapsable: false,
-              children: ['']
-            },
-            {
-              title: 'd3',
-              collapsable: true,
-              children: ['d3/DbHorizon.vue']
-            }
-          ]*/
+          */
         }
       }
     }

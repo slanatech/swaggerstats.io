@@ -5,10 +5,9 @@ categories: doc configuration
 
 # Configuration
 
-swagger-stats supports multiple configurations options that you can pass when initializing swagger-stats middleware
+## Options
 
-
-Here is the list of supported options:
+Pass options when initializing swagger-stats. The following options are supported: 
 
 
 |Option         |Description |Example Value

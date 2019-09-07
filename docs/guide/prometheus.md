@@ -99,14 +99,6 @@ api_request_duration_milliseconds_count{method="GET",path="/v2/store/order/{orde
 
 <br/>
 
-## Grafana Dashboards
-
-**swagger-stats** Grafana Dashboards are published at [https://grafana.com/dashboards?search=swagger-stats](https://grafana.com/dashboards?search=swagger-stats)
-
-<br/>
-<br/>
-
-
 ### Simple scrape 
 
 ```yaml
@@ -133,9 +125,17 @@ scrape_configs:
       password: 'swagger-stats'
 ```  
           
+## Grafana Dashboards
+
+**swagger-stats** Grafana Dashboards are published at [https://grafana.com/dashboards?search=swagger-stats](https://grafana.com/dashboards?search=swagger-stats)
+
+
+![dashboard](/grafana-dashboard.png)
+          
+          
 ## Prometheus Queries
 
-> Examples of Prometheus Queries using swagger-stats metrics
+Examples of Prometheus Queries using swagger-stats metrics
 
 <br/>
 

@@ -23,6 +23,14 @@ footer: MIT Licensed | Copyright © 2019 slana.tech
 pageClass: dashblocks-landing
 ---
 
+<br/>
+<div style="text-align: center;width: 100%;">
+  <a class="github-button" href="https://github.com/slanatech" data-size="large" aria-label="Follow @slanatech on GitHub">Follow</a>
+  <a class="github-button" href="https://github.com/slanatech/swagger-stats" data-icon="octicon-star" data-size="large" aria-label="Star slanatech/swagger-stats on GitHub">Star</a>
+  <a class="github-button" href="https://github.com/slanatech/swagger-stats/fork" data-icon="octicon-repo-forked" data-size="large" aria-label="Fork slanatech/swagger-stats on GitHub">Fork</a>
+</div>
+<br/>
+
 ![sample](ui0950.gif)
 
 ## Quick start
@@ -36,7 +44,7 @@ npm install swagger-stats --save
 ### Express  
 ```javascript
 var swStats = require('swagger-stats');
-var apiSpec = require('swagger.json');
+var apiSpec = require('./swagger.json');
 
 app.use(swStats.getMiddleware({swaggerSpec:apiSpec}));
 ```
@@ -44,7 +52,7 @@ app.use(swStats.getMiddleware({swaggerSpec:apiSpec}));
 ### Koa  
 ```javascript
 var swStats = require('swagger-stats');
-var apiSpec = require('swagger.json');
+var apiSpec = require('./swagger.json');
 var e2k = require('express-to-koa');
 
 app.use(e2k(swStats.getMiddleware({ swaggerSpec:apiSpec })));
@@ -78,4 +86,6 @@ const init = async () => {
 
 ### Start monitoring: navigate to `http://<your app host:port>/swagger-stats/ui`
 
- 
+<ClientOnly>
+  <githubbuttons/>
+</ClientOnly>

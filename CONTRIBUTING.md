@@ -1,16 +1,13 @@
 # Contributing 
 
-Want to contribute to **dashblocks**? Awesome!
+Want to contribute to **swagger-stats** docs? Awesome!
 
 
 There are many ways you can contribute:
 
 * by reviewing 
-* by reporting bugs
-* by suggesting improvements and new features
+* by reporting mistakes
 * by writing or editing documentation
-* by writing code ( no patch is too small  )
-* by closing issues
 
 ## Proposing pull requests
 

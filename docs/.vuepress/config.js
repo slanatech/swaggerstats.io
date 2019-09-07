@@ -47,11 +47,11 @@ module.exports = {
           },
           {
             text: 'Changelog',
-            link: 'https://github.com/dashblocks/blob/dev/CHANGELOG.md'
+            link: 'https://github.com/slanatech/swagger-stats/blob/master/CHANGELOG.md'
           }
         ],
         sidebar: {
-          '/guide/': ['/guide/', 'api','quickstart','conf','prometheus'],
+          '/guide/': ['/guide/', 'api','quickstart','conf','prometheus','stats'],
           '/components/': getComponentsSidebar()
             /*[
             {

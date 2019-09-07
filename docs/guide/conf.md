@@ -69,7 +69,7 @@ app.use(swStats.getMiddleware({swaggerSpec:apiSpec}));
 
 ```  
 
-# Full configuration 
+## Full configuration 
 
 ```javascript
 

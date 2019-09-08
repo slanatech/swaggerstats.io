@@ -3,9 +3,6 @@ home: true
 heroImage: /logo.png
 actionText: Get Started →
 actionLink: /guide/
-meta:
-  - name: google-site-verification
-    content: ypsB9NFIxGEr1b5D0BoZ0dyVzt8lLkilkI0dO755M54
 features:
 - title: Express, Koa, Hapi
   details: Monitor API Operations, trace API requests and responses and collects metrics in Node.js microservices 

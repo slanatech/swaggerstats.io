@@ -17,6 +17,11 @@ module.exports = {
   head: [
     ['link', { rel: "icon", href: "/favicon.png"}]
   ],
+  plugins: {
+    'sitemap': {
+      hostname: 'https://swaggerstats.io'
+    },
+  },
   locales: {
     '/': {
       lang: 'en-US',

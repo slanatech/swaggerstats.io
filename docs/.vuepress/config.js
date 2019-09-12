@@ -21,6 +21,9 @@ module.exports = {
     'sitemap': {
       hostname: 'https://swaggerstats.io'
     },
+    '@vuepress/google-analytics': {
+      'ga': 'UA-101005136-1'
+    }
   },
   locales: {
     '/': {

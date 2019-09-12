@@ -4,5 +4,8 @@ export default ({
   router, // the router instance for the app
   siteData // site metadata
 }) => {
-  // TODO
+  router.addRoutes([
+    { path: '/docs.html', redirect: '/guide' },
+    { path: '/apidoc.html', redirect: '/guide' }
+  ])
 };

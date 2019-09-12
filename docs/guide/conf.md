@@ -28,6 +28,8 @@ Pass options when initializing swagger-stats. The following options are supporte
 |`sessionMaxAge`|If authentication is enabled(`authentication=true`): Max Age of the session, in seconds. Default `900`|`100`|
 |`onAuthenticate`|If authentication is enabled(`authentication=true`): Callback to authenticate request to `/swagger-stats/stats` and `/swagger-stats/metrics`<br/>Application must implement onAuthenticate to validate user credentials<br/>The following parameters are passed to this callback:<br/>`onAuthenticate(req,username,password)`<br/>- req - request<br/>- username - username<br/>- password - password<br/>Must return `true` if user authenticated, `false` if not|see sample|
 |`elasticsearch`|Elasticsearch URL. If specified, enables storing of request response records in Elasticsearch. Default is empty (storing to Elasticsearch is disabled).|`'http://127.0.0.1:9200'`|
+|`elasticsearchUsername`|Username to authenticate with Elasticsearch. Default is none - Elasticsearch auth disabled|`'user'`|
+|`elasticsearchPassword`|Password to authenticate with Elasticsearch. Default is none - Elasticsearch auth disabled|`'pass'`|
 
 
 <br/>

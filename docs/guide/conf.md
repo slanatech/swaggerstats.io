@@ -30,6 +30,7 @@ Pass options when initializing swagger-stats. The following options are supporte
 |`elasticsearch`|Elasticsearch URL. If specified, enables storing of request response records in Elasticsearch. Default is empty (storing to Elasticsearch is disabled).|`'http://127.0.0.1:9200'`|
 |`elasticsearchUsername`|Username to authenticate with Elasticsearch. Default is none - Elasticsearch auth disabled|`'user'`|
 |`elasticsearchPassword`|Password to authenticate with Elasticsearch. Default is none - Elasticsearch auth disabled|`'pass'`|
+|`metricsPrefix`|Prometheus metrics prefix. Will be prepended to metric name if specified.|`'myservice_'`|
 
 
 <br/>

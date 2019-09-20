@@ -4,7 +4,7 @@ heroImage: /logo.png
 actionText: Get Started →
 actionLink: /guide/
 features:
-- title: Express, Koa, Hapi
+- title: Express, Fastify, Koa, Hapi
   details: Monitor API Operations, trace API requests and responses and collects metrics in Node.js microservices 
 - title: Swagger / Open API
   details: With Swagger specification provided, monitor API Operations defined in the spec
@@ -45,7 +45,19 @@ var apiSpec = require('./swagger.json');
 
 app.use(swStats.getMiddleware({swaggerSpec:apiSpec}));
 ```
- 
+
+### Fastify
+```javascript
+const swStats = require('swagger-stats');
+const apiSpec = require('./swagger.json');
+
+const fastify = require('fastify')({
+ logger: true
+});
+
+fastify.register(swStats.getFastifyPlugin, {swaggerSpec:apiSpec});
+```
+
 ### Koa  
 ```javascript
 var swStats = require('swagger-stats');

@@ -34,6 +34,22 @@ Navigate to `http://<your app host:port>/swagger-stats/ui`
 ![dashboard](/ui.png)
 
     
+## Fastify
+
+```javascript
+const swStats = require('swagger-stats');
+const apiSpec = require('./swagger.json');
+
+const fastify = require('fastify')({
+    logger: true
+});
+
+fastify.register(swStats.getFastifyPlugin, {swaggerSpec:apiSpec});
+```
+
+See [Fastify Sample Application](https://github.com/slanatech/swagger-stats/blob/master/examples/fastify/fasifytest.js)
+    
+    
 ## Koa  
 
 You will need `express-to-koa` to use swagger-stats middleware in your Koa app

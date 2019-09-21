@@ -238,3 +238,185 @@ nodejs_process_cpu_usage_percentage
 (nodejs_process_memory_heap_used_bytes)/1048576
 ```
 
+## Scraping with multiple PM2 processes
+
+Based on [this gist](https://gist.github.com/yekver/34c9d41c1c4ea478151574ea539e9953) - kudos!
+
+When you use a process manager such as PM2 in 'cluster' mode, only one process/instance receives the API call to collect metrics. Then you need to use IPC (interprocess communication) to gather statistics from other instances and aggregate them.
+
+You can find PM2 IPC documentation [here](https://pm2.keymetrics.io/docs/usage/pm2-api/#programmatic-api).
+
+In this case we're using `pm2.launchBus()` to open an [Axon Sub Emitter](https://github.com/tj/axon#pubemitter--subemitter) message bus. It's a UNIX socket message bus that Node natively supports via `process.send()`. From the instance that gets the metrics request (let's call it the 'master node'), we use `pm2.sendDataToProcessId()` towards each other instance to gather metrics - which in turn each respond via [`process.send()`](https://nodejs.org/dist/latest-v12.x/docs/api/process.html#process_process_send_message_sendhandle_options_callback).
+
+Once we have gathered metrics from every instance, we use [`promClient.AggregatorRegistry.aggregate()`](https://github.com/siimon/prom-client#usage-with-nodejss-cluster-module) to create the aggregated response and send it back to the client.
+
+This kind of multithreaded/async code is not without dangers - we need to
+
+* carefully register and deregister event listeners to prevent memory leaks
+* use timeouts so that the request won't get stuck
+* use unique request IDs so that when multiple metric requests are received, the IPC responses won't be mixed up (often, metrics collection can last multiple seconds!)
+* catch errors in async code and act on them to prevent unhandled rejections in promises
+
+The below code is in Typescript for type clarity - just remove type definitions if you're using ES2015+. It's a bit spaghetti, with the main function at the end.
+
+```typescript
+import * as swStats from 'swagger-stats';
+import * as pm2Cb from 'pm2';
+/* if you use Bluebird, it makes using PM2 API easier, creating *Async functions */
+const pm2 = Promise.promisifyAll(pm2Cb) as any;
+import * as uuidv4 from 'uuid/v4';
+
+/** Total timeout for workers, ms */
+const TIMEOUT = 2000;
+const promClient = swStats.getPromClient();
+/** The global message topic for gathering Prometheus metrics */
+const TOPIC = 'get_prom_register';
+/** Singleton instance of PM2 message bus */
+let pm2Bus;
+const instanceId = Number(process.env.pm_id);
+
+/* Info returned by pm2.list() */
+interface PM2InstanceData {
+    pm_id: number;
+}
+
+/** Response packet sent to the master instance */
+interface ResponsePacket {
+    type: string;
+    data: {
+        instanceId: number;
+        register: any;
+        success: boolean;
+        reqId: string;
+    };
+}
+
+/** IPC request packet sent from the master instance to the others */
+interface RequestPacket {
+    topic: 'get_prom_register',
+    data: {
+        /** ID if the master instance */
+        targetInstanceId: number;
+        /** Unique request ID to prevent collisions from multiple requests */
+        reqId: string;
+    }
+}
+
+/** Every process listens on the IPC channel for the metric request TOPIC, 
+responding with Prometheus metrics when needed. */
+process.on('message', (packet: RequestPacket) => {
+    try {
+        if (packet.topic === TOPIC) {
+            process.send({
+                type: `process:${packet.data.targetInstanceId}`,
+                data: {
+                    instanceId,
+                    register: promClient.register.getMetricsAsJSON(),
+                    success: true,
+                    reqId: packet.data.reqId,
+                },
+            } as ResponsePacket);
+        }
+    } catch (e) {
+        console.error("Error sending metrics to master node", e);
+    }
+});
+
+async function requestNeighboursData(instancesData: PM2InstanceData[], reqId: string) {
+    const requestData: RequestPacket = {
+        topic: TOPIC,
+        data: {
+            targetInstanceId: instanceId,
+            reqId
+        }
+    };
+
+    let promises = [];
+    for (let instanceData of Object.values(instancesData)) {
+        let targetId = instanceData.pm_id;
+        // don't send message to self
+        if (targetId !== instanceId) {
+            promises.push(pm2.sendDataToProcessIdAsync(targetId, requestData)
+                .catch((e) => console.error(e)));
+        }
+    }
+
+    // Resolves when all responses have been received
+    return Promise.all(promises);
+}
+
+/** Master process gathering aggregated metrics data */
+async function getAggregatedRegistry(instancesData: PM2InstanceData[]) {
+    if (!instancesData || !instancesData.length) {
+        return;
+    }
+
+    // assigning a unique request ID
+    const reqId = uuidv4();
+
+    const registryPromise = new Promise<any>((resolve, reject) => {
+        const instancesCount = instancesData.length;
+        const registersPerInstance = [];
+        const busEventName = `process:${instanceId}`;
+        // master process metrics
+        registersPerInstance[instanceId] = promClient.register.getMetricsAsJSON();
+        let registersReady = 1;
+
+        const finish = () => {
+            // deregister event listener to prevent memory leak
+            pm2Bus.off(busEventName);
+            resolve(promClient.AggregatorRegistry.aggregate(registersPerInstance));
+        };
+
+        // we can only resolve/reject this promise once
+        // this safety timeout deregisters the listener in case of an issue
+        const timeout = setTimeout(finish, TIMEOUT);
+
+        /** Listens to slave instances' responses */
+        pm2Bus.on(busEventName, (packet: ResponsePacket) => {
+            try {
+                if (packet.data.reqId === reqId) {
+                    // array fills up in order of responses
+                    registersPerInstance[packet.data.instanceId] = packet.data.register;
+                    registersReady++;
+
+                    if (registersReady === instancesCount) {
+                        // resolve when all responses have been received
+                        clearTimeout(timeout);
+                        finish();
+                    }
+                }
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
+
+    // request instance data after the response listener has been set up
+    // we are not awaiting, resolution is handled by the bus event listener
+    requestNeighboursData(instancesData, reqId);
+
+    return registryPromise;
+}
+
+/** Main middleware function */
+export default async function swaggerStatsMetrics(req, res, next) {
+  try {
+      // create or use bus singleton
+      pm2Bus = pm2Bus || await pm2.launchBusAsync();
+      // get current instances (threads) data
+      const instancesData = await pm2.listAsync();
+      if (instancesData.length > 1) {
+          // multiple threads - aggregate
+          const register = await getAggregatedRegistry(instancesData);
+          res.send(register.metrics());
+      } else {
+          // 1 thread - send local stats
+          res.send(swStats.getPromStats());
+      }
+  } catch (e) {
+      throw new TechnicalError(e);
+  }
+};
+```
+
